@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generador de SQL Completo - FBM_ADDRESS_ID</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f8fa;
+      padding: 40px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      resize: vertical;
+      font-family: monospace;
+      background-color: #fff;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1c5980;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    code {
+      background-color: #eef1f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🧩 Generador SQL Completo - FBM_ADDRESS_ID</h2>
+    <p>Pega cada dirección (<code>RK-0-XXX-XXX</code>) en una línea separada:</p>
+    <textarea id="input" rows="10" placeholder="RK-0-127-108&#10;RK-0-113-104&#10;RK-0-105-143"></textarea>
+
+    <button onclick="generarSQL()">📋 Generar SQL completo</button>
+
+    <h3>📄 SQL generado:</h3>
+    <textarea id="output" rows="30" readonly></textarea>
+  </div>
+
+  <div class="footer">
+Para uso interno, contiene datos sensibles - © 2025  </div>
+
+  <script>
+    function generarSQL() {
+      const input = document.getElementById('input').value;
+      const lineas = input
+        .split('\n')
+        .map(linea => linea.trim())
+        .filter((linea, index, self) => linea !== '' && self.indexOf(linea) === index);
+
+      if (lineas.length === 0) {
+        document.getElementById('output').value = '⚠️ No se ingresaron valores válidos.';
+        return;
+      }
+
+      const condiciones = lineas.map(val => `A.FBM_ADDRESS_ID LIKE '${val}%'`);
+      const whereClause = 'AND (\n  ' + condiciones.join('\n  OR ') + '\n)';
+
+      const sqlCompleto = `
+SELECT
+  A.INVENTORY_ID,
+  A.FBM_ADDRESS_ID,
+  A.FBM_QUANTITY,
+  B.Thumbnail AS Foto,
+  B.ITEM_TITLE AS Title,
+  B.INSURANCE_COST AS Valor_de_seguro,
+  A.FBM_LAST_UPDATED,
+  A.WAREHOUSE_ID AS CAD
+FROM
+  WHOWNER.BT_FBM_STOCK_ADDRESS A
+LEFT JOIN
+  \`meli-bi-data.TMP.INVENTORY_ITEMS_MLM\` B
+ON
+  A.INVENTORY_ID = B.INVENTORY_ID
+WHERE
+  A.warehouse_id = 'MXNL01'
+  ${whereClause}
+  AND A.FBM_QUANTITY > 0
+ORDER BY
+  A.FBM_LAST_UPDATED DESC;`.trim();
+
+      document.getElementById('output').value = sqlCompleto;
+    }
+  </script>
+
+</body>
+</html>
