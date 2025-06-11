@@ -69,37 +69,38 @@
 </head>
 <body>
 
-  <div class="container">
-    <h2>🧩 Generador SQL Completo - FBM_ADDRESS_ID</h2>
-    <p>Pega cada dirección (<code>RK-0-XXX-XXX</code>) en una línea separada:</p>
-    <textarea id="input" rows="10" placeholder="RK-0-127-108&#10;RK-0-113-104&#10;RK-0-105-143"></textarea>
+<div class="container">
+  <h2>🧩 Generador SQL Completo - FBM_ADDRESS_ID</h2>
+  <p>Pega cada dirección (<code>RK-0-XXX-XXX</code>) en una línea separada:</p>
+  <textarea id="input" rows="10" placeholder="RK-0-127-108&#10;RK-0-113-104&#10;RK-0-105-143"></textarea>
 
-    <button onclick="generarSQL()">📋 Generar SQL completo</button>
+  <button onclick="generarSQL()">📋 Generar SQL completo</button>
 
-    <h3>📄 SQL generado:</h3>
-    <textarea id="output" rows="30" readonly></textarea>
-  </div>
+  <h3>📄 SQL generado:</h3>
+  <textarea id="output" rows="30" readonly></textarea>
+</div>
 
-  <div class="footer">
-Para uso interno, contiene datos sensibles - © 2025  </div>
+<div class="footer">
+  Para uso interno, contiene datos sensibles - © 2025
+</div>
 
-  <script>
-    function generarSQL() {
-      const input = document.getElementById('input').value;
-      const lineas = input
-        .split('\n')
-        .map(linea => linea.trim())
-        .filter((linea, index, self) => linea !== '' && self.indexOf(linea) === index);
+<script>
+  function generarSQL() {
+    const input = document.getElementById('input').value;
+    const lineas = input
+      .split('\n')
+      .map(linea => linea.trim())
+      .filter((linea, index, self) => linea !== '' && self.indexOf(linea) === index);
 
-      if (lineas.length === 0) {
-        document.getElementById('output').value = '⚠️ No se ingresaron valores válidos.';
-        return;
-      }
+    if (lineas.length === 0) {
+      document.getElementById('output').value = '⚠️ No se ingresaron valores válidos.';
+      return;
+    }
 
-      const condiciones = lineas.map(val => `A.FBM_ADDRESS_ID LIKE '${val}%'`);
-      const whereClause = 'AND (\n  ' + condiciones.join('\n  OR ') + '\n)';
+    const condiciones = lineas.map(val => `A.FBM_ADDRESS_ID LIKE '${val}%'`);
+    const whereClause = 'AND (\n  ' + condiciones.join('\n  OR ') + '\n)';
 
-      const sqlCompleto = `
+    const sqlCompleto = `
 SELECT
   A.INVENTORY_ID,
   A.FBM_ADDRESS_ID,
@@ -108,13 +109,16 @@ SELECT
   B.ITEM_TITLE AS Title,
   B.INSURANCE_COST AS Valor_de_seguro,
   A.FBM_LAST_UPDATED,
-  A.WAREHOUSE_ID AS CAD
+  A.WAREHOUSE_ID AS CAD,
+  C.FBM_IDENTIFIERS_EAN AS Codigo_EAN
 FROM
   WHOWNER.BT_FBM_STOCK_ADDRESS A
 LEFT JOIN
   \`meli-bi-data.TMP.INVENTORY_ITEMS_MLM\` B
-ON
-  A.INVENTORY_ID = B.INVENTORY_ID
+  ON A.INVENTORY_ID = B.INVENTORY_ID
+LEFT JOIN
+  \`meli-bi-data.WHOWNER.LK_FBM_STOCK_INVENTORIES\` C
+  ON A.INVENTORY_ID = C.INVENTORY_ID
 WHERE
   A.warehouse_id = 'MXNL01'
   ${whereClause}
@@ -122,9 +126,9 @@ WHERE
 ORDER BY
   A.FBM_LAST_UPDATED DESC;`.trim();
 
-      document.getElementById('output').value = sqlCompleto;
-    }
-  </script>
+    document.getElementById('output').value = sqlCompleto;
+  }
+</script>
 
 </body>
 </html>
