@@ -65,12 +65,31 @@
       padding: 2px 6px;
       border-radius: 4px;
     }
+
+    select {
+      padding: 10px;
+      font-size: 14px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h2>🧩 Generador SQL Completo - FBM_ADDRESS_ID</h2>
+
+  <label for="warehouseSelect"><strong>Selecciona Warehouse ID:</strong></label>
+  <select id="warehouseSelect">
+    <option value="MXNL01">MXNL01</option>
+    <option value="MXJC01">MXJC01</option>
+    <option value="MXGT01">MXGT01</option>
+    <option value="MXYU01">MXYU01</option>
+    <option value="MXCD02">MXCD02</option>
+  </select>
+
   <p>Pega cada dirección (<code>RK-0-XXX-XXX</code>) en una línea separada:</p>
   <textarea id="input" rows="10" placeholder="RK-0-127-108&#10;RK-0-113-104&#10;RK-0-105-143"></textarea>
 
@@ -87,6 +106,8 @@
 <script>
   function generarSQL() {
     const input = document.getElementById('input').value;
+    const warehouse = document.getElementById('warehouseSelect').value;
+
     const lineas = input
       .split('\n')
       .map(linea => linea.trim())
@@ -120,7 +141,7 @@ LEFT JOIN
   \`meli-bi-data.WHOWNER.LK_FBM_STOCK_INVENTORIES\` C
   ON A.INVENTORY_ID = C.INVENTORY_ID
 WHERE
-  A.warehouse_id = 'MXNL01'
+  A.warehouse_id = '${warehouse}'
   ${whereClause}
   AND A.FBM_QUANTITY > 0
 ORDER BY
